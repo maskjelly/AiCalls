@@ -12,7 +12,9 @@ export default function ClientComponent({
   return (
     <VoiceProvider auth={{ type: "accessToken", value: accessToken }}>
       <Messages />
-      <Controls />
+      <div className="pt-20">
+        <Controls />
+      </div>
     </VoiceProvider>
   );
 }
