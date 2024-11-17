@@ -1,7 +1,6 @@
 "use client";
 import { Brain, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { SignIn } from '@/components/sign-in';
 
 interface NavbarProps {
   user?: {
@@ -34,9 +33,6 @@ export function Navbar({ user }: NavbarProps) {
           </motion.div>
 
           {/* User Profile */}
-          <div className="flex items-center gap-4">
-            <SignIn user={user} />
-          </div>
         </div>
       </div>
     </motion.div>
