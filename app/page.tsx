@@ -12,5 +12,9 @@ export default async function Page() {
     throw new Error();
   }
 
-  return <ClientComponent accessToken={accessToken} />;
+  return (
+    <>
+      <ClientComponent accessToken={accessToken} />
+    </>
+  );
 }
