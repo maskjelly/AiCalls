@@ -99,7 +99,7 @@ export default function Messages() {
                       {!isUser && (
                         <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                           <AutoAwesome fontSize="small" />
-                          Misti's Response
+                          Misti&#39;s Response
                         </Typography>
                       )}
                       <Typography component="div" variant="body2">
