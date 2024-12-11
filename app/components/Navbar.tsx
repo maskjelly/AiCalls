@@ -1,40 +1,30 @@
-"use client";
-import { Brain, User } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React from 'react'
+import { AppBar, Toolbar, Typography, IconButton } from '@mui/material'
+import { Menu as MenuIcon } from '@mui/icons-material'
 
 interface NavbarProps {
-  user?: {
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  } | null;
+  user: any // Replace with proper user type
 }
 
-export function Navbar({ user }: NavbarProps) {
+const Navbar: React.FC<NavbarProps> = ({ user }) => {
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="fixed top-0 left-0 right-0 z-50 bg-black/10 backdrop-blur-lg border-b border-white/10"
-    >
-      <div className="max-w-5xl mx-auto px-3 sm:px-4">
-        <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo */}
-          <motion.div 
-            className="flex items-center gap-2 sm:gap-3"
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="relative">
-              <div className="bg-white/10 p-1.5 sm:p-2 rounded-lg backdrop-blur-sm">
-                <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-            </div>
-            <span className="text-sm sm:text-base text-white/90 font-light tracking-wider">MISTI</span>
-          </motion.div>
+    <AppBar position="fixed" color="default" elevation={1}>
+      <Toolbar>
+        <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
+          <MenuIcon />
+        </IconButton>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          Chat App
+        </Typography>
+        {user && (
+          <Typography variant="subtitle1">
+            Welcome, {user.name}
+          </Typography>
+        )}
+      </Toolbar>
+    </AppBar>
+  )
+}
 
-          {/* User Profile */}
-        </div>
-      </div>
-    </motion.div>
-  );
-} 
+export default Navbar
+

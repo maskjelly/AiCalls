@@ -1,19 +1,34 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useVoice, VoiceReadyState } from "@humeai/voice-react";
-import { Mic, MicOff, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
-import { InitialMic } from "./components/InitialMic";
+import React, { useEffect, useRef, useState } from "react"
+import { useVoice, VoiceReadyState } from "@humeai/voice-react"
+import { Mic, MicOff, AutorenewRounded } from '@mui/icons-material'
+import { useToast } from "@/hooks/use-toast"
+import { motion } from "framer-motion"
+import { InitialMic } from "./components/InitialMic"
+import { 
+  Box, 
+  Button, 
+  Typography, 
+  useTheme, 
+  Fade,
+  Paper,
+  Grid
+} from '@mui/material'
 
 function SimpleWaveAnimation({ isActive, color }: { isActive: boolean; color: string }) {
-  if (!isActive) return null;
+  const theme = useTheme()
+
+  if (!isActive) return null
 
   return (
-    <div className="flex items-center justify-center gap-1.5 h-12">
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, height: 48 }}>
       {[...Array(3)].map((_, i) => (
         <motion.div
           key={i}
-          className={`w-1.5 rounded-full ${color}`}
+          style={{
+            width: 6,
+            backgroundColor: color,
+            borderRadius: theme.shape.borderRadius,
+          }}
           animate={{
             height: ['12px', '24px', '12px'],
           }}
@@ -25,60 +40,53 @@ function SimpleWaveAnimation({ isActive, color }: { isActive: boolean; color: st
           }}
         />
       ))}
-    </div>
-  );
+    </Box>
+  )
 }
 
 export default function Controls() {
-  const { connect, disconnect, readyState, messages } = useVoice();
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isAISpeaking, setIsAISpeaking] = useState(false);
-  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
-  const { toast } = useToast();
-  const prevMessageLength = useRef(0);
-  const [isFirstTime, setIsFirstTime] = useState(true);
+  const { connect, disconnect, readyState, messages } = useVoice()
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [isAISpeaking, setIsAISpeaking] = useState(false)
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false)
+  const { toast } = useToast()
+  const prevMessageLength = useRef(0)
+  const [isFirstTime, setIsFirstTime] = useState(true)
+  const theme = useTheme()
 
-  /*
-  Message detection logic:
-  - Tracks new messages and updates speaking states
-  - AI speaking: Shows when AI is generating response
-  - User speaking: Shows when user is providing input
-  - Handles end states to properly stop animations
-  */
   useEffect(() => {
     if (messages.length > prevMessageLength.current) {
-      const lastMessage = messages[messages.length - 1];
+      const lastMessage = messages[messages.length - 1]
       
       if (lastMessage.type === 'assistant_message') {
-        setIsAISpeaking(true);
-        setIsUserSpeaking(false);
+        setIsAISpeaking(true)
+        setIsUserSpeaking(false)
       } else if (lastMessage.type === 'user_message') {
-        setIsUserSpeaking(true);
-        setIsAISpeaking(false);
+        setIsUserSpeaking(true)
+        setIsAISpeaking(false)
       } else if (lastMessage.type === 'assistant_end') {
-        setIsAISpeaking(false);
+        setIsAISpeaking(false)
       }
     }
-    prevMessageLength.current = messages.length;
-  }, [messages]);
+    prevMessageLength.current = messages.length
+  }, [messages])
 
-  // Auto-disable speaking states when disconnected
   useEffect(() => {
     if (readyState !== VoiceReadyState.OPEN) {
-      setIsAISpeaking(false);
-      setIsUserSpeaking(false);
+      setIsAISpeaking(false)
+      setIsUserSpeaking(false)
     }
-  }, [readyState]);
+  }, [readyState])
 
   const handleConnect = async () => {
-    setIsConnecting(true);
+    setIsConnecting(true)
     try {
-      await connect();
+      await connect()
       toast({
         title: "Connected successfully",
         description: "Voice session has started",
         duration: 3000,
-      });
+      })
     } catch (error) {
       toast({
         title: "Connection failed",
@@ -88,95 +96,130 @@ export default function Controls() {
             : "Failed to start voice session",
         variant: "destructive",
         duration: 5000,
-      });
+      })
     } finally {
-      setIsConnecting(false);
+      setIsConnecting(false)
     }
-  };
+  }
 
   const handleDisconnect = () => {
-    disconnect();
-    setIsAISpeaking(false);
-    setIsUserSpeaking(false);
+    disconnect()
+    setIsAISpeaking(false)
+    setIsUserSpeaking(false)
     toast({
       title: "Session ended",
       description: "Voice session has been terminated",
       duration: 3000,
-    });
-  };
+    })
+  }
 
   const getStatusColor = () => {
     switch (readyState) {
       case VoiceReadyState.OPEN:
-        return "bg-emerald-500";
+        return theme.palette.success.main
       case VoiceReadyState.CONNECTING:
-        return "bg-amber-500";
+        return theme.palette.warning.main
       default:
-        return "bg-red-500";
+        return theme.palette.error.main
     }
-  };
+  }
 
   const handleInitialStart = async () => {
-    setIsFirstTime(false);
-    await handleConnect();
-  };
+    setIsFirstTime(false)
+    await handleConnect()
+  }
 
   if (isFirstTime) {
-    return <InitialMic isFirstTime={isFirstTime} onStart={handleInitialStart} />;
+    return <InitialMic isFirstTime={isFirstTime} onStart={handleInitialStart} />
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50">
-      <div className="bg-gradient-to-t from-black to-transparent h-24 sm:h-32 pointer-events-none" />
-      
-      <div className="relative bg-black/90 backdrop-blur-lg border-t border-white/10">
-        {/* Center Animation Container */}
-        <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-black/40 backdrop-blur-sm p-4 rounded-full border border-white/10">
+    <Box 
+      sx={{ 
+        position: 'fixed', 
+        bottom: 0, 
+        left: 0, 
+        right: 0, 
+        zIndex: 50,
+        bgcolor: 'background.paper',
+        borderTop: 1,
+        borderColor: 'divider',
+      }}
+    >
+      <Fade in={true}>
+        <Paper 
+          elevation={3}
+          sx={{
+            position: 'absolute',
+            top: -32,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            p: 2,
+            borderRadius: '50%',
+          }}
+        >
           <SimpleWaveAnimation 
             isActive={readyState === VoiceReadyState.OPEN && (isAISpeaking || isUserSpeaking)} 
-            color={isAISpeaking ? 'bg-red-500' : 'bg-blue-500'} 
+            color={isAISpeaking ? theme.palette.error.main : theme.palette.primary.main} 
           />
-        </div>
+        </Paper>
+      </Fade>
 
-        {/* Bottom Controls Container */}
-        <div className="max-w-3xl mx-auto grid grid-cols-2 gap-2 p-3 sm:p-4">
-          {/* Status Indicator - Left Half */}
-          <div className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-full bg-white/5 border border-white/10">
-            <div className={`
-              w-2 h-2 rounded-full ${getStatusColor()}
-              ${readyState === VoiceReadyState.OPEN && 'animate-pulse'}
-            `} />
-            <span className="text-xs sm:text-sm text-white/70">
+      <Grid container spacing={2} sx={{ maxWidth: 'md', mx: 'auto', p: 2 }}>
+        <Grid item xs={6}>
+          <Paper 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: 1, 
+              p: 1,
+              bgcolor: 'background.default',
+            }}
+          >
+            <Box 
+              sx={{ 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%', 
+                bgcolor: getStatusColor(),
+                animation: readyState === VoiceReadyState.OPEN ? 'pulse 2s infinite' : 'none',
+                '@keyframes pulse': {
+                  '0%': {
+                    opacity: 1,
+                  },
+                  '50%': {
+                    opacity: 0.5,
+                  },
+                  '100%': {
+                    opacity: 1,
+                  },
+                },
+              }} 
+            />
+            <Typography variant="body2" color="text.secondary">
               {readyState === VoiceReadyState.OPEN && (
                 isAISpeaking ? "AI Speaking" : isUserSpeaking ? "Listening..." : "Connected"
               )}
               {readyState === VoiceReadyState.CONNECTING && "Connecting"}
               {readyState === VoiceReadyState.CLOSED && "Disconnected"}
-            </span>
-          </div>
-
-          {/* Control Button - Right Half */}
-          <button
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={6}>
+          <Button
+            fullWidth
+            variant={readyState === VoiceReadyState.OPEN ? "outlined" : "contained"}
+            color={readyState === VoiceReadyState.OPEN ? "error" : "primary"}
             onClick={readyState === VoiceReadyState.OPEN ? handleDisconnect : handleConnect}
             disabled={isConnecting}
-            className={`
-              px-4 sm:px-6 py-2.5 sm:py-3 rounded-full font-light tracking-wide
-              backdrop-blur-sm transition-all duration-300
-              disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base
-              ${readyState === VoiceReadyState.OPEN 
-                ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30' 
-                : 'bg-white/10 text-white hover:bg-white/20'
-              }
-            `}
+            startIcon={readyState === VoiceReadyState.OPEN ? <MicOff /> : <Mic />}
           >
-            {readyState === VoiceReadyState.OPEN ? (
-              <span>End Session</span>
-            ) : (
-              <span>{isConnecting ? 'Connecting...' : 'Start Session'}</span>
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+            {readyState === VoiceReadyState.OPEN ? 'End Session' : (isConnecting ? 'Connecting...' : 'Start Session')}
+          </Button>
+        </Grid>
+      </Grid>
+    </Box>
+  )
 }
+

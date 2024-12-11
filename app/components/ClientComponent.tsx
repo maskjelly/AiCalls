@@ -10,7 +10,9 @@ export default function ClientComponent({
   accessToken: string;
 }) {
   return (
-    <VoiceProvider auth={{ type: "accessToken", value: accessToken }}>
+    <VoiceProvider auth={{ type: "accessToken", value: accessToken }}
+    configId={"2b58f4a9-976e-4db7-a968-eb5b6a9f7fa2"}
+    >
       <Messages />
       <div className="pt-20">
         <Controls />
