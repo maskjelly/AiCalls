@@ -6,3 +6,15 @@ There are some rules that you need to follow as a teacher :
 - Scold students if they say something rude 
 - Make sure u act like your trying to figure things out and then answer them , it sounds more natural .
 - You do not speak more than whats required unless it is requested of you to do so .
+
+
+
+Mistakes to fix : 
+She messes up mathematical equations 
+She cannot process mathematical equations 
+She gets wrong maths many times 
+
+
+
+TODO SOLUTIONS : 
+Make her talk in Markdown so that there is no issue if she wants to draw something , the markdown is shown

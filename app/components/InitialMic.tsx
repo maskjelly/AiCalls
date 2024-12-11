@@ -1,7 +1,39 @@
 import React from 'react'
-import { Box, Button, Typography, useTheme } from '@mui/material'
-import { Mic } from '@mui/icons-material'
+import { styled } from '@stitches/react'
+import { SpeakerLoudIcon } from '@radix-ui/react-icons'
 import { motion } from 'framer-motion'
+
+const InitialMicContainer = styled(motion.div, {
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  zIndex: 50,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '1.5rem',
+  backgroundColor: 'var(--background)',
+  borderTop: '1px solid var(--border)',
+})
+
+const StartButton = styled(motion.button, {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '4rem',
+  height: '4rem',
+  backgroundColor: 'var(--background)',
+  color: 'var(--foreground)',
+  border: '1px solid var(--border)',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    backgroundColor: 'var(--background-light)',
+    borderColor: 'var(--primary-main)',
+  },
+})
 
 interface InitialMicProps {
   isFirstTime: boolean
@@ -9,51 +41,32 @@ interface InitialMicProps {
 }
 
 export function InitialMic({ isFirstTime, onStart }: InitialMicProps) {
-  const theme = useTheme()
-
   return (
-    <Box 
-      sx={{ 
-        position: 'fixed', 
-        bottom: 0, 
-        left: 0, 
-        right: 0, 
-        zIndex: 50,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        p: 4,
-        bgcolor: 'background.paper',
-        borderTop: 1,
-        borderColor: 'divider',
-      }}
+    <InitialMicContainer
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+
+
+      
+      exit={{ opacity: 0, y: 50 }}
+      transition={{ duration: 0.3 }}
     >
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+      <StartButton
+        onClick={onStart}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
       >
-        <Button
-          variant="contained"
-          color="primary"
-          size="large"
-          startIcon={<Mic />}
-          onClick={onStart}
-          sx={{ 
-            borderRadius: '50%', 
-            width: 80, 
-            height: 80,
-            mb: 2,
-          }}
-        >
-          Start
-        </Button>
-      </motion.div>
-      <Typography variant="body2" color="text.secondary" align="center">
-        Click to start your voice session
-      </Typography>
-    </Box>
+        <SpeakerLoudIcon width={24} height={24} />
+      </StartButton>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        style={{ marginTop: '0.75rem', fontSize: '0.75rem', fontWeight: 500, color: 'var(--foreground-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+      >
+        Start Voice Session
+      </motion.p>
+    </InitialMicContainer>
   )
 }
 

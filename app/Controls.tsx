@@ -1,36 +1,109 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useVoice, VoiceReadyState } from "@humeai/voice-react"
-import { Mic, MicOff, AutorenewRounded } from '@mui/icons-material'
+import { SpeakerLoudIcon, StopIcon } from '@radix-ui/react-icons'
 import { useToast } from "@/hooks/use-toast"
 import { motion } from "framer-motion"
 import { InitialMic } from "./components/InitialMic"
-import { 
-  Box, 
-  Button, 
-  Typography, 
-  useTheme, 
-  Fade,
-  Paper,
-  Grid
-} from '@mui/material'
+import { styled } from '@stitches/react'
+
+const ControlsContainer = styled('div', {
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  zIndex: 50,
+  backgroundColor: 'var(--background)',
+  borderTop: '1px solid var(--border)',
+})
+
+const ControlsContent = styled('div', {
+  maxWidth: '64rem',
+  margin: '0 auto',
+  padding: '0.75rem',
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: '0.75rem',
+})
+
+const StatusIndicator = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '0.5rem',
+  padding: '0.5rem',
+  backgroundColor: 'var(--background-light)',
+  border: '1px solid var(--border)',
+})
+
+const StatusDot = styled('div', {
+  width: '0.5rem',
+  height: '0.5rem',
+  borderRadius: '0',
+  variants: {
+    status: {
+      connected: { backgroundColor: 'var(--success)' },
+      connecting: { backgroundColor: 'var(--warning)' },
+      disconnected: { backgroundColor: 'var(--error)' },
+    },
+  },
+})
+
+const ControlButton = styled('button', {
+  padding: '0.5rem',
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '0.5rem',
+  border: '1px solid var(--border)',
+  backgroundColor: 'var(--background)',
+  color: 'var(--foreground)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  fontSize: '0.75rem',
+
+  '&:hover': {
+    backgroundColor: 'var(--background-light)',
+  },
+
+  variants: {
+    variant: {
+      start: {
+        '&:hover': { borderColor: 'var(--success)' },
+      },
+      stop: {
+        '&:hover': { borderColor: 'var(--error)' },
+      },
+    },
+  },
+})
+
+const WaveContainer = styled(motion.div, {
+  position: 'absolute',
+  top: '-1.5rem',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  backgroundColor: 'var(--background-light)',
+  padding: '0.25rem',
+  border: '1px solid var(--border)',
+})
 
 function SimpleWaveAnimation({ isActive, color }: { isActive: boolean; color: string }) {
-  const theme = useTheme()
-
   if (!isActive) return null
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5, height: 48 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem', height: '1.5rem' }}>
       {[...Array(3)].map((_, i) => (
         <motion.div
           key={i}
           style={{
-            width: 6,
+            width: 4,
             backgroundColor: color,
-            borderRadius: theme.shape.borderRadius,
           }}
           animate={{
-            height: ['12px', '24px', '12px'],
+            height: ['0.5rem', '1rem', '0.5rem'],
           }}
           transition={{
             duration: 0.8,
@@ -40,7 +113,7 @@ function SimpleWaveAnimation({ isActive, color }: { isActive: boolean; color: st
           }}
         />
       ))}
-    </Box>
+    </div>
   )
 }
 
@@ -52,7 +125,6 @@ export default function Controls() {
   const { toast } = useToast()
   const prevMessageLength = useRef(0)
   const [isFirstTime, setIsFirstTime] = useState(true)
-  const theme = useTheme()
 
   useEffect(() => {
     if (messages.length > prevMessageLength.current) {
@@ -83,8 +155,8 @@ export default function Controls() {
     try {
       await connect()
       toast({
-        title: "Connected successfully",
-        description: "Voice session has started",
+        title: "Connected",
+        description: "Voice session started",
         duration: 3000,
       })
     } catch (error) {
@@ -107,8 +179,8 @@ export default function Controls() {
     setIsAISpeaking(false)
     setIsUserSpeaking(false)
     toast({
-      title: "Session ended",
-      description: "Voice session has been terminated",
+      title: "Disconnected",
+      description: "Voice session ended",
       duration: 3000,
     })
   }
@@ -116,11 +188,11 @@ export default function Controls() {
   const getStatusColor = () => {
     switch (readyState) {
       case VoiceReadyState.OPEN:
-        return theme.palette.success.main
+        return 'connected'
       case VoiceReadyState.CONNECTING:
-        return theme.palette.warning.main
+        return 'connecting'
       default:
-        return theme.palette.error.main
+        return 'disconnected'
     }
   }
 
@@ -134,92 +206,48 @@ export default function Controls() {
   }
 
   return (
-    <Box 
-      sx={{ 
-        position: 'fixed', 
-        bottom: 0, 
-        left: 0, 
-        right: 0, 
-        zIndex: 50,
-        bgcolor: 'background.paper',
-        borderTop: 1,
-        borderColor: 'divider',
-      }}
-    >
-      <Fade in={true}>
-        <Paper 
-          elevation={3}
-          sx={{
-            position: 'absolute',
-            top: -32,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            p: 2,
-            borderRadius: '50%',
-          }}
-        >
-          <SimpleWaveAnimation 
-            isActive={readyState === VoiceReadyState.OPEN && (isAISpeaking || isUserSpeaking)} 
-            color={isAISpeaking ? theme.palette.error.main : theme.palette.primary.main} 
-          />
-        </Paper>
-      </Fade>
+    <ControlsContainer>
+      <WaveContainer
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+      >
+        <SimpleWaveAnimation 
+          isActive={readyState === VoiceReadyState.OPEN && (isAISpeaking || isUserSpeaking)} 
+          color={isAISpeaking ? 'var(--error)' : 'var(--success)'} 
+        />
+      </WaveContainer>
 
-      <Grid container spacing={2} sx={{ maxWidth: 'md', mx: 'auto', p: 2 }}>
-        <Grid item xs={6}>
-          <Paper 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center', 
-              gap: 1, 
-              p: 1,
-              bgcolor: 'background.default',
-            }}
-          >
-            <Box 
-              sx={{ 
-                width: 8, 
-                height: 8, 
-                borderRadius: '50%', 
-                bgcolor: getStatusColor(),
-                animation: readyState === VoiceReadyState.OPEN ? 'pulse 2s infinite' : 'none',
-                '@keyframes pulse': {
-                  '0%': {
-                    opacity: 1,
-                  },
-                  '50%': {
-                    opacity: 0.5,
-                  },
-                  '100%': {
-                    opacity: 1,
-                  },
-                },
-              }} 
-            />
-            <Typography variant="body2" color="text.secondary">
-              {readyState === VoiceReadyState.OPEN && (
-                isAISpeaking ? "AI Speaking" : isUserSpeaking ? "Listening..." : "Connected"
-              )}
-              {readyState === VoiceReadyState.CONNECTING && "Connecting"}
-              {readyState === VoiceReadyState.CLOSED && "Disconnected"}
-            </Typography>
-          </Paper>
-        </Grid>
-        <Grid item xs={6}>
-          <Button
-            fullWidth
-            variant={readyState === VoiceReadyState.OPEN ? "outlined" : "contained"}
-            color={readyState === VoiceReadyState.OPEN ? "error" : "primary"}
-            onClick={readyState === VoiceReadyState.OPEN ? handleDisconnect : handleConnect}
-            disabled={isConnecting}
-            startIcon={readyState === VoiceReadyState.OPEN ? <MicOff /> : <Mic />}
-          >
-            {readyState === VoiceReadyState.OPEN ? 'End Session' : (isConnecting ? 'Connecting...' : 'Start Session')}
-          </Button>
-        </Grid>
-      </Grid>
-    </Box>
+      <ControlsContent>
+        <StatusIndicator>
+          <StatusDot status={getStatusColor()} />
+          <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>
+            {readyState === VoiceReadyState.OPEN && (
+              isAISpeaking ? "AI Speaking" : isUserSpeaking ? "Listening" : "Connected"
+            )}
+            {readyState === VoiceReadyState.CONNECTING && "Connecting"}
+            {readyState === VoiceReadyState.CLOSED && "Disconnected"}
+          </span>
+        </StatusIndicator>
+
+        <ControlButton
+          variant={readyState === VoiceReadyState.OPEN ? 'stop' : 'start'}
+          onClick={readyState === VoiceReadyState.OPEN ? handleDisconnect : handleConnect}
+          disabled={isConnecting}
+        >
+          {readyState === VoiceReadyState.OPEN ? (
+            <>
+              <StopIcon />
+              End Session
+            </>
+          ) : (
+            <>
+              <SpeakerLoudIcon />
+              {isConnecting ? 'Connecting' : 'Start Session'}
+            </>
+          )}
+        </ControlButton>
+      </ControlsContent>
+    </ControlsContainer>
   )
 }
-
